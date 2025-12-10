@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLS PE Metrics Dashboard - pls-prod</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+    <style>
+        body { font-family: Segoe UI, Arial, sans-serif; background: #f5f7fb; margin: 0; padding: 24px; color: #1f2937; }
+        .shell { max-width: 1200px; margin: 0 auto; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); padding: 18px; margin-bottom: 16px; }
+        h1 { margin: 0 0 8px 0; font-size: 24px; }
+        .meta { color: #4b5563; font-size: 13px; line-height: 1.6; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        th { background: #111827; color: white; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(360px,1fr)); gap: 16px; }
+        canvas { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <div class="card">
+            <h1>PLS Private Endpoint Metrics</h1>
+            <div class="meta">
+                <div><strong>PLS:</strong> pls-prod</div>
+                <div><strong>Subscriptions scanned:</strong> 0</div>
+                <div><strong>Time range (UTC):</strong> 2025-12-07 16:15:06 - 2025-12-10 16:15:06</div>
+                <div><strong>Aggregation:</strong> sum</div>
+                <div><strong>Generated:</strong> 2025-12-10 08:17:46</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Summary</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>PE Name</th>
+                        <th>Subscription</th>
+                        <th>Resource Group</th>
+                        <th>Bytes In</th>
+                        <th>Bytes Out</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- rows inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Time-Series (Azure-style)</h2>
+            <div class="grid" id="charts"></div>
+        </div>
+    </div>
+
+    <script type="application/json" id="chart-data">[
+  {
+    "name": "pe-pls-1-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": [
+      {
+        "Out": 1635.0,
+        "In": 2889.0,
+        "Time": "2025-12-09T01:50:00Z"
+      },
+      {
+        "Out": 1090.0,
+        "In": 1800.0,
+        "Time": "2025-12-09T01:55:00Z"
+      },
+      {
+        "Out": 1090.0,
+        "In": 1758.0,
+        "Time": "2025-12-09T02:10:00Z"
+      },
+      {
+        "Out": 1635.0,
+        "In": 2889.0,
+        "Time": "2025-12-09T02:15:00Z"
+      },
+      {
+        "Out": 2725.0,
+        "In": 4815.0,
+        "Time": "2025-12-09T10:55:00Z"
+      }
+    ]
+  },
+  {
+    "name": "pe-pls-10-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": null
+  },
+  {
+    "name": "pe-pls-11-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": null
+  },
+  {
+    "name": "pe-pls-12-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": null
+  },
+  {
+    "name": "pe-pls-13-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": null
+  },
+  {
+    "name": "pe-pls-14-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": null
+  },
+  {
+    "name": "pe-pls-15-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": {
+      "Out": 148.0,
+      "In": 0,
+      "Time": "2025-12-08T23:05:00Z"
+    }
+  },
+  {
+    "name": "pe-pls-16-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": null
+  },
+  {
+    "name": "pe-pls-17-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": [
+      {
+        "Out": 74.0,
+        "In": 0,
+        "Time": "2025-12-08T22:40:00Z"
+      },
+      {
+        "Out": 296.0,
+        "In": 158.0,
+        "Time": "2025-12-08T22:45:00Z"
+      },
+      {
+        "Out": 222.0,
+        "In": 158.0,
+        "Time": "2025-12-08T23:00:00Z"
+      },
+      {
+        "Out": 222.0,
+        "In": 158.0,
+        "Time": "2025-12-08T23:05:00Z"
+      }
+    ]
+  },
+  {
+    "name": "pe-pls-18-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": null
+  },
+  {
+    "name": "pe-pls-19-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": {
+      "Out": 74.0,
+      "In": 158.0,
+      "Time": "2025-12-08T23:15:00Z"
+    }
+  },
+  {
+    "name": "pe-pls-2-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": [
+      {
+        "Out": 592.0,
+        "In": 158.0,
+        "Time": "2025-12-08T22:50:00Z"
+      },
+      {
+        "Out": 296.0,
+        "In": 316.0,
+        "Time": "2025-12-08T22:55:00Z"
+      },
+      {
+        "Out": 1480.0,
+        "In": 790.0,
+        "Time": "2025-12-08T23:00:00Z"
+      },
+      {
+        "Out": 518.0,
+        "In": 316.0,
+        "Time": "2025-12-08T23:05:00Z"
+      },
+      {
+        "Out": 222.0,
+        "In": 0,
+        "Time": "2025-12-08T23:10:00Z"
+      },
+      {
+        "Out": 444.0,
+        "In": 948.0,
+        "Time": "2025-12-08T23:15:00Z"
+      },
+      {
+        "Out": 888.0,
+        "In": 474.0,
+        "Time": "2025-12-09T01:35:00Z"
+      },
+      {
+        "Out": 296.0,
+        "In": 158.0,
+        "Time": "2025-12-09T01:40:00Z"
+      },
+      {
+        "Out": 12221.0,
+        "In": 22049.0,
+        "Time": "2025-12-09T01:45:00Z"
+      }
+    ]
+  },
+  {
+    "name": "pe-pls-20-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": {
+      "Out": 444.0,
+      "In": 948.0,
+      "Time": "2025-12-08T23:15:00Z"
+    }
+  },
+  {
+    "name": "pe-pls-3-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": [
+      {
+        "Out": 344.0,
+        "In": 158.0,
+        "Time": "2025-12-08T23:05:00Z"
+      },
+      {
+        "Out": 788.0,
+        "In": 1106.0,
+        "Time": "2025-12-08T23:15:00Z"
+      },
+      {
+        "Out": 442.0,
+        "In": 0,
+        "Time": "2025-12-08T23:20:00Z"
+      }
+    ]
+  },
+  {
+    "name": "pe-pls-4-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": {
+      "Out": 444.0,
+      "In": 948.0,
+      "Time": "2025-12-08T23:15:00Z"
+    }
+  },
+  {
+    "name": "pe-pls-5-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": {
+      "Out": 498.0,
+      "In": 948.0,
+      "Time": "2025-12-08T23:15:00Z"
+    }
+  },
+  {
+    "name": "pe-pls-6-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": {
+      "Out": 444.0,
+      "In": 0,
+      "Time": "2025-12-08T23:15:00Z"
+    }
+  },
+  {
+    "name": "pe-pls-7-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": {
+      "Out": 444.0,
+      "In": 948.0,
+      "Time": "2025-12-08T23:15:00Z"
+    }
+  },
+  {
+    "name": "pe-pls-8-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": {
+      "Out": 518.0,
+      "In": 948.0,
+      "Time": "2025-12-08T23:15:00Z"
+    }
+  },
+  {
+    "name": "pe-pls-9-prod",
+    "subscription": "ACE-msini",
+    "resourceGroup": "rg-pe-prod",
+    "samples": [
+      {
+        "Out": 3494.0,
+        "In": 0,
+        "Time": "2025-12-08T20:40:00Z"
+      },
+      {
+        "Out": 5520.0,
+        "In": 0,
+        "Time": "2025-12-08T20:50:00Z"
+      },
+      {
+        "Out": 3958.0,
+        "In": 0,
+        "Time": "2025-12-08T21:05:00Z"
+      },
+      {
+        "Out": 1562.0,
+        "In": 0,
+        "Time": "2025-12-08T21:10:00Z"
+      },
+      {
+        "Out": 606.0,
+        "In": 0,
+        "Time": "2025-12-08T21:20:00Z"
+      },
+      {
+        "Out": 1596.0,
+        "In": 0,
+        "Time": "2025-12-08T21:25:00Z"
+      },
+      {
+        "Out": 1616.0,
+        "In": 0,
+        "Time": "2025-12-08T21:30:00Z"
+      },
+      {
+        "Out": 1926.0,
+        "In": 0,
+        "Time": "2025-12-08T21:35:00Z"
+      },
+      {
+        "Out": 1118.0,
+        "In": 0,
+        "Time": "2025-12-08T21:40:00Z"
+      },
+      {
+        "Out": 1468.0,
+        "In": 0,
+        "Time": "2025-12-08T21:45:00Z"
+      },
+      {
+        "Out": 1946.0,
+        "In": 0,
+        "Time": "2025-12-08T21:50:00Z"
+      },
+      {
+        "Out": 1596.0,
+        "In": 0,
+        "Time": "2025-12-08T21:55:00Z"
+      },
+      {
+        "Out": 1596.0,
+        "In": 0,
+        "Time": "2025-12-08T22:00:00Z"
+      },
+      {
+        "Out": 1082.0,
+        "In": 0,
+        "Time": "2025-12-08T22:05:00Z"
+      },
+      {
+        "Out": 942.0,
+        "In": 790.0,
+        "Time": "2025-12-08T23:15:00Z"
+      },
+      {
+        "Out": 11990.0,
+        "In": 21018.0,
+        "Time": "2025-12-09T01:50:00Z"
+      },
+      {
+        "Out": 16350.0,
+        "In": 28260.0,
+        "Time": "2025-12-09T01:55:00Z"
+      },
+      {
+        "Out": 8720.0,
+        "In": 14904.0,
+        "Time": "2025-12-09T02:10:00Z"
+      },
+      {
+        "Out": 21255.0,
+        "In": 37053.0,
+        "Time": "2025-12-09T02:15:00Z"
+      },
+      {
+        "Out": 27795.0,
+        "In": 47937.0,
+        "Time": "2025-12-09T10:55:00Z"
+      },
+      {
+        "Out": 2180.0,
+        "In": 3516.0,
+        "Time": "2025-12-09T11:00:00Z"
+      }
+    ]
+  }
+]</script>
+    <script>
+        const data = JSON.parse(document.getElementById('chart-data').textContent);
+        const tbody = document.querySelector('tbody');
+        data.forEach(pe => {
+            const totalIn = pe.samples.reduce((a,b) => a + (b.In || 0), 0);
+            const totalOut = pe.samples.reduce((a,b) => a + (b.Out || 0), 0);
+            const tr = document.createElement('tr');
+            tr.innerHTML = <td><strong></strong></td><td></td><td></td><td></td><td></td><td></td>;
+            tbody.appendChild(tr);
+        });
+
+        const chartsHost = document.getElementById('charts');
+        data.forEach((pe, idx) => {
+            const card = document.createElement('div');
+            const canvas = document.createElement('canvas');
+            canvas.id = chart-;
+            card.appendChild(canvas);
+            chartsHost.appendChild(card);
+
+            const labels = pe.samples.map(s => new Date(s.Time));
+            const bytesIn = pe.samples.map(s => s.In || 0);
+            const bytesOut = pe.samples.map(s => s.Out || 0);
+
+            new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Bytes In', data: bytesIn, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', tension: 0.25, pointRadius: 0 },
+                        { label: 'Bytes Out', data: bytesOut, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.25, pointRadius: 0 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { type: 'time', time: { unit: 'minute' }, ticks: { maxTicksLimit: 8 } },
+                        y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString() } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: { callbacks: { label: ctx => ${ctx.dataset.label}:  bytes } }
+                    },
+                    elements: { line: { borderWidth: 2 } }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

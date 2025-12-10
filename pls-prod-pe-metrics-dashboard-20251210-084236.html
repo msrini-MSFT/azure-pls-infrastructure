@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PLS PE Metrics Dashboard - pls-prod</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
+    <style>
+        body { font-family: Segoe UI, Arial, sans-serif; background: #f5f7fb; margin: 0; padding: 24px; color: #1f2937; }
+        .shell { max-width: 1400px; margin: 0 auto; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); padding: 18px; margin-bottom: 16px; }
+        h1 { margin: 0 0 8px 0; font-size: 24px; }
+        h2 { margin: 0 0 16px 0; font-size: 18px; }
+        .meta { color: #4b5563; font-size: 13px; line-height: 1.6; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+        th { background: #111827; color: white; font-weight: 600; }
+        tr:hover { background: #f5f5f5; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(500px,1fr)); gap: 16px; }
+        .cbox { background: white; padding: 12px; border: 1px solid #e5e7eb; border-radius: 6px; }
+        .ctitle { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+        .cchart { position: relative; height: 280px; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="shell">
+        <div class="card">
+            <h1>PLS Private Endpoint Metrics</h1>
+            <div class="meta">
+                <div><strong>PLS:</strong> pls-prod</div>
+                <div><strong>Subscription:</strong> ACE-msini</div>
+                <div><strong>Private Endpoints found:</strong> 20</div>
+                <div><strong>Time range (UTC):</strong> 2025-12-07 16:37:44 - 2025-12-10 16:37:44</div>
+                <div><strong>Aggregation:</strong> sum | <strong>Generated:</strong> 2025-12-10 08:42:36</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Summary Table</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>PE Name</th>
+                        <th>Subscription</th>
+                        <th>Resource Group</th>
+                        <th>Bytes In</th>
+                        <th>Bytes Out</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="tbl"></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Time-Series Charts</h2>
+            <div class="grid" id="chx"></div>
+        </div>
+    </div>
+
+    <script>
+        const data = [            {name:"pe-pls-1-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:14151,out:8175,samples:[{"Time":"2025-12-09T01:52:00Z","In":4689,"Out":2725},{"Time":"2025-12-09T02:12:00Z","In":3684,"Out":2180},{"Time":"2025-12-09T02:17:00Z","In":963,"Out":545},{"Time":"2025-12-09T10:52:00Z","In":1926,"Out":1090},{"Time":"2025-12-09T10:57:00Z","In":2889,"Out":1635}]},            {name:"pe-pls-10-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:0,out:0,samples:[]},            {name:"pe-pls-11-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:0,out:0,samples:[]},            {name:"pe-pls-12-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:0,out:0,samples:[]},            {name:"pe-pls-13-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:0,out:0,samples:[]},            {name:"pe-pls-14-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:0,out:0,samples:[]},            {name:"pe-pls-15-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:0,out:148,samples:[{"Time":"2025-12-08T23:07:00Z","In":0,"Out":148}]},            {name:"pe-pls-16-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:0,out:0,samples:[]},            {name:"pe-pls-17-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:474,out:814,samples:[{"Time":"2025-12-08T22:42:00Z","In":0,"Out":74},{"Time":"2025-12-08T22:47:00Z","In":158,"Out":296},{"Time":"2025-12-08T23:02:00Z","In":316,"Out":444}]},            {name:"pe-pls-18-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:0,out:0,samples:[]},            {name:"pe-pls-19-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:158,out:74,samples:[{"Time":"2025-12-08T23:17:00Z","In":158,"Out":74}]},            {name:"pe-pls-2-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:25209,out:16957,samples:[{"Time":"2025-12-08T22:52:00Z","In":474,"Out":888},{"Time":"2025-12-08T22:57:00Z","In":316,"Out":592},{"Time":"2025-12-08T23:02:00Z","In":632,"Out":1184},{"Time":"2025-12-08T23:07:00Z","In":158,"Out":222},{"Time":"2025-12-08T23:12:00Z","In":0,"Out":222},{"Time":"2025-12-08T23:17:00Z","In":948,"Out":444},{"Time":"2025-12-09T01:32:00Z","In":0,"Out":296},{"Time":"2025-12-09T01:37:00Z","In":632,"Out":888},{"Time":"2025-12-09T01:42:00Z","In":158,"Out":296},{"Time":"2025-12-09T01:47:00Z","In":21891,"Out":11925}]},            {name:"pe-pls-20-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:948,out:444,samples:[{"Time":"2025-12-08T23:17:00Z","In":948,"Out":444}]},            {name:"pe-pls-3-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:1264,out:1574,samples:[{"Time":"2025-12-08T23:07:00Z","In":158,"Out":344},{"Time":"2025-12-08T23:17:00Z","In":1106,"Out":788},{"Time":"2025-12-08T23:22:00Z","In":0,"Out":442}]},            {name:"pe-pls-4-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:948,out:444,samples:[{"Time":"2025-12-08T23:12:00Z","In":0,"Out":74},{"Time":"2025-12-08T23:17:00Z","In":948,"Out":370}]},            {name:"pe-pls-5-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:948,out:498,samples:[{"Time":"2025-12-08T23:12:00Z","In":0,"Out":74},{"Time":"2025-12-08T23:17:00Z","In":948,"Out":424}]},            {name:"pe-pls-6-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:0,out:444,samples:[{"Time":"2025-12-08T23:12:00Z","In":0,"Out":74},{"Time":"2025-12-08T23:17:00Z","In":0,"Out":370}]},            {name:"pe-pls-7-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:948,out:444,samples:[{"Time":"2025-12-08T23:12:00Z","In":0,"Out":74},{"Time":"2025-12-08T23:17:00Z","In":948,"Out":370}]},            {name:"pe-pls-8-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:948,out:518,samples:[{"Time":"2025-12-08T23:12:00Z","In":0,"Out":148},{"Time":"2025-12-08T23:17:00Z","In":948,"Out":370}]},            {name:"pe-pls-9-prod",sub:"ACE-msini",rg:"rg-pe-prod",in:153478,out:118316,samples:[{"Time":"2025-12-08T20:37:00Z","In":0,"Out":3238},{"Time":"2025-12-08T20:42:00Z","In":0,"Out":256},{"Time":"2025-12-08T20:47:00Z","In":0,"Out":2302},{"Time":"2025-12-08T20:52:00Z","In":0,"Out":3218},{"Time":"2025-12-08T21:07:00Z","In":0,"Out":5520},{"Time":"2025-12-08T21:22:00Z","In":0,"Out":1340},{"Time":"2025-12-08T21:27:00Z","In":0,"Out":1596},{"Time":"2025-12-08T21:32:00Z","In":0,"Out":1468},{"Time":"2025-12-08T21:37:00Z","In":0,"Out":1468},{"Time":"2025-12-08T21:42:00Z","In":0,"Out":1670},{"Time":"2025-12-08T21:47:00Z","In":0,"Out":1522},{"Time":"2025-12-08T21:52:00Z","In":0,"Out":1764},{"Time":"2025-12-08T21:57:00Z","In":0,"Out":1778},{"Time":"2025-12-08T22:02:00Z","In":0,"Out":1944},{"Time":"2025-12-08T23:12:00Z","In":0,"Out":148},{"Time":"2025-12-08T23:17:00Z","In":790,"Out":794},{"Time":"2025-12-09T01:52:00Z","In":41742,"Out":23980},{"Time":"2025-12-09T01:57:00Z","In":7536,"Out":4360},{"Time":"2025-12-09T02:12:00Z","In":34623,"Out":20165},{"Time":"2025-12-09T02:17:00Z","In":17334,"Out":9810},{"Time":"2025-12-09T10:52:00Z","In":16998,"Out":9810},{"Time":"2025-12-09T10:57:00Z","In":34455,"Out":20165}]}];
+        const tbody = document.getElementById('tbl');
+        const chx = document.getElementById('chx');
+
+        data.forEach((pe, idx) => {
+            const tot = pe.in + pe.out;
+            const row = document.createElement('tr');
+            row.innerHTML = <td><strong>\</strong></td><td>\</td><td>\</td><td>\</td><td>\</td><td>\</td>;
+            tbody.appendChild(row);
+
+            if (pe.samples.length > 0) {
+                const box = document.createElement('div');
+                box.className = 'cbox';
+                box.innerHTML = <div class="ctitle">\</div><div class="cchart"><canvas id="c\"></canvas></div>;
+                chx.appendChild(box);
+
+                const labels = pe.samples.map(s => new Date(s.Time));
+                const inData = pe.samples.map(s => s.In);
+                const outData = pe.samples.map(s => s.Out);
+
+                new Chart(document.getElementById('c' + idx).getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [
+                            { label: 'In', data: inData, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.05)', tension: 0.2, pointRadius: 0, borderWidth: 2 },
+                            { label: 'Out', data: outData, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.05)', tension: 0.2, pointRadius: 0, borderWidth: 2 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { x: { type: 'time', time: { unit: 'hour' }, ticks: { maxTicksLimit: 4 } }, y: { beginAtZero: true } },
+                        plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: c => c.dataset.label + ': ' + c.parsed.y.toLocaleString() + ' B' } } }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
