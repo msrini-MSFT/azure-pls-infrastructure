@@ -28,12 +28,6 @@ This script will:
 
 ## Deployment Steps
 
-## Output Files
-
-The script generates the following files:
-- `pls-prod-pe-metrics-{timestamp}.csv` - Metrics data (Bytes In/Out per PE)
-- `pls-prod-pe-metrics-dashboard-{timestamp}.html` - Interactive HTML dashboard with charts
-
 ## Features
 
 - **Multi-PE Discovery**: Automatically finds all Private Endpoints connected to your PLS
@@ -46,13 +40,8 @@ The script generates the following files:
 
 The script uses the following Azure resource identifiers:
 - **Subscription**: Reads from current Azure context
-- **Resource Group**: Looks for PES in `rg-pe-prod` (customizable in script)
+- **Resource Group**: Looks for PES in Resource Group (customizable in script)
 - **Metric Period**: Last 7 days by default
-
-To modify the resource group or metrics period, edit the script variables:
-```powershell
-$resourceGroupPattern = "rg-pe-*"  # PE resource group pattern
-```
 
 ## Example Output
 
@@ -78,10 +67,3 @@ The HTML dashboard displays:
 
 MIT License - See [LICENSE](LICENSE) for details
 
-## Support
-
-For issues:
-1. Verify your Azure PowerShell connection: `Get-AzContext`
-2. Ensure the PLS and PEs are deployed in your subscription
-3. Check that you have read permissions on Azure Monitor
-**Last Updated**: December 8, 2025
