@@ -80,11 +80,6 @@ pe-pls-2-prod,3601,2120
 
 **Dashboard:** Interactive charts displaying traffic per PE with timestamps
 
-## Documentation
-
-- [PREREQUISITES.md](PREREQUISITES.md) - System setup and requirements
-- [QUICK_REFERENCE.md](QUICK_REFERENCE.md) - Common usage patterns
-
 ## License
 
 MIT License - Open source and free to use
