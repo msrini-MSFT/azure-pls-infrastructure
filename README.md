@@ -1,176 +1,87 @@
-# Private Link Service (PLS) with 20 Private Endpoints - Deployment Guide
+# Azure Private Link Service - PE Metrics Dashboard
 
-This project deploys a complete Azure infrastructure with:
-- **Private Link Service (PLS)** in one resource group
-- **20 Private Endpoints (PEs)** in another resource group
-- **Azure VM** for traffic generation through all PEs
-- **Log Analytics** for monitoring and diagnostics
-- **Metrics collection script** to fetch bytes in/out for all PEs
+A PowerShell script for collecting and publishing metrics from Private Endpoints connected to Azure Private Link Service.
 
-## Prerequisites
+## Quick Start
+
+### Usage
+
+```powershell
+.\scripts\get-pls-pe-metrics-dashboard.ps1
+```
+
+This script will:
+- Discover all Private Endpoints connected to your PLS
+- Collect metrics from Azure Monitor (bytes in/out)
+- Generate an HTML dashboard with visual charts
+- Export metrics to CSV file
+
+### Prerequisites
 
 1. **Azure Subscription** - You need an active Azure subscription
-2. **Azure PowerShell Module** - Install the latest version:
+2. **Azure PowerShell Module**:
    ```powershell
    Install-Module -Name Az -Force -AllowClobber
    ```
-3. **Bicep CLI** - Required for template validation (installed with Azure CLI):
-   ```powershell
-   winget install Microsoft.AzureCLI
-   ```
-4. **Appropriate Azure Permissions** - You need permissions to:
-   - Create resource groups
-   - Create network resources (VNets, NICs, NSGs)
-   - Create compute resources (VMs)
-   - Create monitoring resources (Log Analytics)
+3. **Private Link Service** - You must have an existing PLS with Private Endpoints already deployed
+4. **Azure Permissions** - Permissions to read metrics from Azure Monitor
 
 ## Deployment Steps
 
-### Step 1: Verify Your Credentials
+## Output Files
 
-Update the following variables in `scripts/deploy.ps1`:
+The script generates the following files:
+- `pls-prod-pe-metrics-{timestamp}.csv` - Metrics data (Bytes In/Out per PE)
+- `pls-prod-pe-metrics-dashboard-{timestamp}.html` - Interactive HTML dashboard with charts
+
+## Features
+
+- **Multi-PE Discovery**: Automatically finds all Private Endpoints connected to your PLS
+- **Metrics Collection**: Fetches bytes in/out metrics from Azure Monitor
+- **CSV Export**: Structured data export for analysis
+- **HTML Dashboard**: Visual representation with interactive charts
+- **Cross-Subscription Support**: Can discover PEs across multiple subscriptions
+
+## Configuration
+
+The script uses the following Azure resource identifiers:
+- **Subscription**: Reads from current Azure context
+- **Resource Group**: Looks for PES in `rg-pe-prod` (customizable in script)
+- **Metric Period**: Last 7 days by default
+
+To modify the resource group or metrics period, edit the script variables:
 ```powershell
-$subscriptionId = "e0fe32a3-f59a-4e4f-96ea-cbd48502e379"
-$tenantId = "9329c02a-4050-4798-93ae-b6e37b19af6d"
-$location = "eastus"  # Change if needed
+$resourceGroupPattern = "rg-pe-*"  # PE resource group pattern
 ```
 
-### Step 2: Run the Deployment Script
+## Example Output
 
-Open PowerShell as Administrator and run:
-```powershell
-cd "c:\Users\msrini\OneDrive - Microsoft\Desktop\PLS"
-.\scripts\deploy.ps1
+The CSV file contains:
+```
+PE Name,Bytes In,Bytes Out
+pe-pls-1-prod,2358,1362
+pe-pls-2-prod,3601,2120
+...
 ```
 
-The script will:
-1. Connect to Azure
-2. Create two resource groups (PLS and PE)
-3. Deploy the PLS infrastructure (VNet, Load Balancer, Private Link Service, Log Analytics)
-4. Deploy the PE and VM infrastructure (Consumer VNet, 20 Private Endpoints, VM)
-5. Display deployment summary with resource details
+The HTML dashboard displays:
+- Bar charts for each PE's traffic
+- Summary statistics
+- Timestamp of data collection
 
-**Deployment Time:** Approximately 10-15 minutes
+## Documentation
 
-### Step 3: Collect Metrics
+- [Prerequisites](PREREQUISITES.md) - System requirements and setup
+- [Quick Reference](QUICK_REFERENCE.md) - Common commands
 
-Once the infrastructure is deployed and stable (wait 10-15 minutes for data to flow), run:
-```powershell
-.\scripts\collect-metrics.ps1
-```
+## License
 
-This will:
-1. Connect to Azure
-2. Retrieve all Private Endpoints in your subscription
-3. Fetch bytes in/out metrics for the last 7 days
-4. Display results in console and export to CSV
-
-#### Custom Parameters:
-```powershell
-.\scripts\collect-metrics.ps1 -DaysBack 14 -OutputFile "custom_metrics.csv"
-```
-
-## Infrastructure Details
-
-### Resource Groups
-
-#### PLS Resource Group (`rg-pls-prod`)
-- **VNet**: 10.0.0.0/16
-  - Subnet PLS Frontend: 10.0.1.0/24
-  - Subnet PLS Backend: 10.0.2.0/24
-- **Load Balancer**: Standard SKU with health probes
-- **Private Link Service**: Auto-approved for your subscription
-- **Log Analytics Workspace**: For monitoring and diagnostics
-
-#### PE Resource Group (`rg-pe-prod`)
-- **VNet**: 10.1.0.0/16
-  - Subnet VM: 10.1.0.0/24
-  - Subnet PE: 10.1.1.0/24
-- **Virtual Machine**: Standard_D2s_v3 (Ubuntu 18.04 LTS)
-- **20 Private Endpoints**: Connected to the PLS
-- **Public IP**: Attached to VM for remote access
-- **Azure Monitor Agent**: For guest-level diagnostics
-
-## Accessing the VM
-
-After deployment, you can access the VM using:
-
-**SSH (Linux)**:
-```bash
-ssh azureuser@<VM_PUBLIC_IP>
-# Retrieve from deployment output or Azure Portal
-```
-
-**RDP (Windows Remote Desktop)**:
-- Use RDP client to connect to the public IP
-- Default username: `azureuser`
-- You may need to set a password or use key-based auth
-
-## Monitoring
-
-### View Metrics in Azure Portal
-
-1. Navigate to the **Log Analytics Workspace** in the PE resource group
-2. Use **Logs** to query:
-   ```kusto
-   InsightsMetrics
-   | where Namespace == "prometheus"
-   | where Name contains "bytes"
-   | summarize sum(Val) by Computer, Name
-   ```
-
-### Metrics Available
-- **BytesIn**: Bytes received by the Private Endpoint
-- **BytesOut**: Bytes sent from the Private Endpoint
-- CPU, Memory, Network metrics from the VM
-
-## Troubleshooting
-
-### Deployment Fails
-- Verify your Azure credentials and subscription access
-- Ensure the location is supported for all resource types
-- Check resource quotas in your subscription
-
-### Private Endpoints Not Connected
-- Wait 5-10 minutes after deployment
-- Verify the PLS is in "Active" state in the portal
-- Check NSG rules on both VNets
-
-### No Metrics Data
-- Ensure 10-15 minutes have passed since deployment
-- Verify the VM is sending traffic through the PEs
-- Check Log Analytics workspace permissions
-
-## Cleanup
-
-To remove all resources:
-```powershell
-Remove-AzResourceGroup -Name "rg-pls-prod" -Force
-Remove-AzResourceGroup -Name "rg-pe-prod" -Force
-```
-
-## File Structure
-
-```
-PLS/
-├── infrastructure/
-│   ├── pls.bicep              # PLS infrastructure template
-│   └── pes-vm.bicep           # PE and VM infrastructure template
-├── scripts/
-│   ├── deploy.ps1             # Main deployment script
-│   ├── collect-metrics.ps1    # Metrics collection script
-│   └── README.md              # This file
-└── requirement.txt            # Project requirements
-```
+MIT License - See [LICENSE](LICENSE) for details
 
 ## Support
 
-For issues or questions:
-1. Check Azure Portal for resource status
-2. Review deployment logs in PowerShell output
-3. Check Network Watcher for connectivity issues
-4. Review Log Analytics for diagnostic data
-
----
-
+For issues:
+1. Verify your Azure PowerShell connection: `Get-AzContext`
+2. Ensure the PLS and PEs are deployed in your subscription
+3. Check that you have read permissions on Azure Monitor
 **Last Updated**: December 8, 2025
