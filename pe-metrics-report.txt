@@ -1,0 +1,150 @@
+﻿PRIVATE ENDPOINT PER-PE METRICS (MERGED: direct + fallback)
+Generated: 2025-12-08 18:35:34
+Lookback (hours): 1
+
+Totals (merged):
+  Total Bytes In: 200,572 bytes
+  Total Bytes Out: 144,490 bytes
+  Total Bytes (sum): 345,062 bytes
+
+Per-PE breakdown:
+PE #1: pe-pls-1-prod
+  IP: 10.1.1.19
+  Bytes In: 9,336 bytes
+  Bytes Out: 5,450 bytes
+  Total: 14,786 bytes
+  Source: Direct
+
+PE #2: pe-pls-2-prod
+  IP: 10.1.1.15
+  Bytes In: 22,681 bytes
+  Bytes Out: 13,405 bytes
+  Total: 36,086 bytes
+  Source: Direct
+
+PE #3: pe-pls-3-prod
+  IP: 10.1.1.4
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #4: pe-pls-4-prod
+  IP: 10.1.1.22
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #5: pe-pls-5-prod
+  IP: 10.1.1.18
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #6: pe-pls-6-prod
+  IP: 10.1.1.16
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #7: pe-pls-7-prod
+  IP: 10.1.1.6
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #8: pe-pls-8-prod
+  IP: 10.1.1.23
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #9: pe-pls-9-prod
+  IP: 10.1.1.7
+  Bytes In: 101,235 bytes
+  Bytes Out: 58,315 bytes
+  Total: 159,550 bytes
+  Source: Direct
+
+PE #10: pe-pls-10-prod
+  IP: 10.1.1.5
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #11: pe-pls-11-prod
+  IP: 10.1.1.21
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #12: pe-pls-12-prod
+  IP: 10.1.1.9
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #13: pe-pls-13-prod
+  IP: 10.1.1.17
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #14: pe-pls-14-prod
+  IP: 10.1.1.8
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #15: pe-pls-15-prod
+  IP: 10.1.1.12
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #16: pe-pls-16-prod
+  IP: 10.1.1.13
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #17: pe-pls-17-prod
+  IP: 10.1.1.10
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #18: pe-pls-18-prod
+  IP: 10.1.1.11
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #19: pe-pls-19-prod
+  IP: 10.1.1.20
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+
+PE #20: pe-pls-20-prod
+  IP: 10.1.1.14
+  Bytes In: 3,960 bytes
+  Bytes Out: 3,960 bytes
+  Total: 7,920 bytes
+  Source: Fallback (NLB)
+

@@ -1,0 +1,169 @@
+name: Validate Scripts
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'scripts/**'
+      - 'infrastructure/**'
+      - '.github/workflows/validate.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'scripts/**'
+      - 'infrastructure/**'
+
+jobs:
+  validate-powershell:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up PowerShell
+      shell: powershell
+      run: |
+        $PSVersionTable
+        Write-Host "PowerShell version: $($PSVersionTable.PSVersion)"
+    
+    - name: Install PSScriptAnalyzer
+      shell: powershell
+      run: |
+        Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+        Import-Module PSScriptAnalyzer
+    
+    - name: Validate PowerShell Syntax
+      shell: powershell
+      run: |
+        $scriptPath = ".\scripts\"
+        $scripts = Get-ChildItem -Path $scriptPath -Filter "*.ps1"
+        
+        foreach ($script in $scripts) {
+          Write-Host "Checking $($script.Name)..."
+          
+          # Check syntax
+          $parseError = $null
+          [System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$null, [ref]$parseError) | Out-Null
+          
+          if ($parseError) {
+            Write-Error "Syntax error in $($script.Name): $parseError"
+            exit 1
+          }
+          
+          # Run PSScriptAnalyzer
+          $analysisResults = Invoke-ScriptAnalyzer -Path $script.FullName -Severity Warning
+          if ($analysisResults) {
+            Write-Warning "Analysis warnings for $($script.Name):"
+            $analysisResults | Format-Table -AutoSize
+          }
+        }
+        
+        Write-Host "✓ All PowerShell scripts validated successfully"
+    
+    - name: Validate Bicep Templates
+      shell: pwsh
+      run: |
+        # Install Azure CLI if not present
+        if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
+          Write-Host "Installing Azure CLI..."
+          choco install azure-cli -y
+        }
+        
+        # Validate Bicep files
+        $bicepPath = ".\infrastructure\"
+        $bicepFiles = Get-ChildItem -Path $bicepPath -Filter "*.bicep" -ErrorAction SilentlyContinue
+        
+        if ($bicepFiles) {
+          foreach ($file in $bicepFiles) {
+            Write-Host "Validating $($file.Name)..."
+            & az bicep build --file $file.FullName
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Bicep validation failed for $($file.Name)"
+              exit 1
+            }
+          }
+          Write-Host "✓ All Bicep templates validated successfully"
+        } else {
+          Write-Host "No Bicep files found to validate"
+        }
+    
+    - name: Check for Secrets
+      shell: powershell
+      run: |
+        Write-Host "Checking for hardcoded secrets..."
+        
+        $secretPatterns = @(
+          '(?i)(password|passwd|pwd)\s*[=:]\s*[''"]?[^''"]+[''"]?',
+          '(?i)(api[_-]?key|apikey)\s*[=:]\s*[''"]?[^''"]+[''"]?',
+          '(?i)(secret|token)\s*[=:]\s*[''"]?[^''"]+[''"]?'
+        )
+        
+        $files = Get-ChildItem -Path ".\scripts\" -Filter "*.ps1" -Recurse
+        $secretsFound = $false
+        
+        foreach ($file in $files) {
+          $content = Get-Content $file.FullName
+          foreach ($pattern in $secretPatterns) {
+            if ($content -match $pattern) {
+              Write-Warning "Potential secret found in $($file.Name)"
+              $secretsFound = $true
+            }
+          }
+        }
+        
+        if ($secretsFound) {
+          Write-Error "Potential secrets found. Please use environment variables or secure parameters."
+          exit 1
+        }
+        
+        Write-Host "✓ No hardcoded secrets detected"
+
+  lint-markdown:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Lint Markdown
+      uses: nosborn/github-action-markdown-cli@v3.3.0
+      with:
+        files: .
+        config_file: .markdownlint.json
+      continue-on-error: true
+
+  validate-documentation:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check Documentation
+      shell: bash
+      run: |
+        echo "Checking documentation files..."
+        
+        required_docs=("README.md" "PREREQUISITES.md" "LICENSE" "CONTRIBUTING.md" "CHANGELOG.md")
+        missing_docs=()
+        
+        for doc in "${required_docs[@]}"; do
+          if [ ! -f "$doc" ]; then
+            missing_docs+=("$doc")
+          fi
+        done
+        
+        if [ ${#missing_docs[@]} -gt 0 ]; then
+          echo "❌ Missing documentation files:"
+          printf '%s\n' "${missing_docs[@]}"
+          exit 1
+        fi
+        
+        echo "✓ All required documentation files present"
+        
+        # Check for broken links in README (basic check)
+        echo "Checking for basic markdown syntax..."
+        if grep -q "]()" README.md; then
+          echo "❌ Found broken links in README.md"
+          exit 1
+        fi
+        
+        echo "✓ Documentation validation passed"
