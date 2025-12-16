@@ -29,7 +29,7 @@ function Parse-DurationString {
 
 function Validate-UtcDateTime {
     param([string]$input,[string]$label)
-    $formats = @('yyyy-MM-dd HH:mm:ss','yyyy-MM-ddTHH:mm:ssZ','yyyy-MM-ddTHH:mm:ss','yyyy-MM-dd HH:mm:ssZ')
+    [string[]]$formats = @('yyyy-MM-dd HH:mm:ss','yyyy-MM-ddTHH:mm:ssZ','yyyy-MM-ddTHH:mm:ss','yyyy-MM-dd HH:mm:ssZ')
     $style = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
     $result = $null
     if ([datetime]::TryParseExact($input, $formats, [System.Globalization.CultureInfo]::InvariantCulture, $style, [ref]$result)) {
