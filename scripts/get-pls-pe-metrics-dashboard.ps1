@@ -39,7 +39,8 @@ function Validate-UtcDateTime {
 
     # Allow date-only input by supplying a default time (start -> 00:00:00, end -> 23:59:59)
     if ($text -match '^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$') {
-        $defaultTime = ($label -like '*end*') ? '23:59:59' : '00:00:00'
+        $defaultTime = '00:00:00'
+        if ($label -like '*end*') { $defaultTime = '23:59:59' }
         $text = "$text $defaultTime"
     }
     $formats = @('yyyy-MM-dd HH:mm:ss','yyyy-MM-ddTHH:mm:ssZ','yyyy-MM-ddTHH:mm:ss','yyyy-MM-dd HH:mm:ssZ','MM/dd/yyyy HH:mm:ss')
