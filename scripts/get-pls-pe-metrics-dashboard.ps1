@@ -37,18 +37,73 @@ function Validate-UtcDateTime {
     }
 }
 
-# Time window selection
-if ($StartTime -and $EndTime) {
-    $startTime = $StartTime
-    $endTime = $EndTime
-} elseif ($Duration) {
-    $ts = Parse-DurationString $Duration
-    if (-not $ts) { throw "Unsupported -Duration. Try '2h', '1d', '30m', or just hours (e.g., '6')." }
-    $endTime = (Get-Date).ToUniversalTime()
-    $startTime = $endTime.Subtract($ts)
+# Interactive time window selection (only if nothing was provided)
+$timeParamsProvided = $PSBoundParameters.ContainsKey('StartTime') -or $PSBoundParameters.ContainsKey('EndTime') -or $PSBoundParameters.ContainsKey('Duration') -or $PSBoundParameters.ContainsKey('LookbackHours')
+
+if ($timeParamsProvided) {
+    if ($StartTime -and $EndTime) {
+        $startTime = $StartTime
+        $endTime = $EndTime
+    } elseif ($Duration) {
+        $ts = Parse-DurationString $Duration
+        if (-not $ts) { throw "Unsupported -Duration. Try '2h', '1d', '30m', or just hours (e.g., '6')." }
+        $endTime = (Get-Date).ToUniversalTime()
+        $startTime = $endTime.Subtract($ts)
+    } else {
+        $endTime = (Get-Date).ToUniversalTime()
+        $startTime = $endTime.AddHours(-$LookbackHours)
+    }
 } else {
-    $endTime = (Get-Date).ToUniversalTime()
-    $startTime = $endTime.AddHours(-$LookbackHours)
+    Write-Host "Select time range (UTC):" -ForegroundColor Cyan
+    Write-Host "  [1] Last 1 day (default)" -ForegroundColor Gray
+    Write-Host "  [2] Last 6 hours" -ForegroundColor Gray
+    Write-Host "  [3] Last 3 hours" -ForegroundColor Gray
+    Write-Host "  [4] Custom start/end (UTC)" -ForegroundColor Gray
+    $choice = Read-Host "Enter 1/2/3/4 or press Enter for default (1)"
+
+    switch ($choice) {
+        '2' { $Duration = '6h' }
+        '3' { $Duration = '3h' }
+        '4' {
+            do {
+                $rawStart = Read-Host "Enter UTC start (yyyy-MM-dd HH:mm:ss)"
+                $rawEnd = Read-Host "Enter UTC end   (yyyy-MM-dd HH:mm:ss)"
+                $StartTime = Validate-UtcDateTime $rawStart 'start time'
+                $EndTime   = Validate-UtcDateTime $rawEnd 'end time'
+                if (-not $StartTime -or -not $EndTime) { Write-Host "Please re-enter both times in UTC format." -ForegroundColor Yellow }
+            } while (-not $StartTime -or -not $EndTime)
+        }
+        Default { $Duration = '1d' }
+    }
+
+    if ($StartTime -and $EndTime) {
+        $startTime = $StartTime
+        $endTime = $EndTime
+    } elseif ($Duration) {
+        $ts = Parse-DurationString $Duration
+        if (-not $ts) { throw "Unsupported -Duration. Try '2h', '1d', '30m', or just hours (e.g., '6')." }
+        $endTime = (Get-Date).ToUniversalTime()
+        $startTime = $endTime.Subtract($ts)
+    } else {
+        $endTime = (Get-Date).ToUniversalTime()
+        $startTime = $endTime.AddHours(-24)
+    }
+}
+
+# Interactive aggregation selection (only if not provided)
+if (-not $PSBoundParameters.ContainsKey('AggregationMethod')) {
+    Write-Host "Select aggregation method:" -ForegroundColor Cyan
+    Write-Host "  [1] sum (default)" -ForegroundColor Gray
+    Write-Host "  [2] avg" -ForegroundColor Gray
+    Write-Host "  [3] max" -ForegroundColor Gray
+    Write-Host "  [4] min" -ForegroundColor Gray
+    $aggChoice = Read-Host "Enter 1/2/3/4 or press Enter for default (1)"
+    switch ($aggChoice) {
+        '2' { $AggregationMethod = 'avg' }
+        '3' { $AggregationMethod = 'max' }
+        '4' { $AggregationMethod = 'min' }
+        Default { $AggregationMethod = 'sum' }
+    }
 }
 
 Write-Host "Time range (UTC): $($startTime.ToString('yyyy-MM-dd HH:mm:ss')) -> $($endTime.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Cyan

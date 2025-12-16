@@ -61,6 +61,11 @@ cd scripts
 .\get-pls-pe-metrics-dashboard.ps1 -PlsName 'pls-prod' -LookbackHours 72
 `
 
+#### Interactive prompts (when no time/aggregation provided)
+- Time range menu: `1 day` (default), `6 hours`, `3 hours`, or custom UTC start/end (yyyy-MM-dd HH:mm:ss).
+- Aggregation menu: `sum` (default), `avg`, `max`, `min`.
+- Press Enter to accept defaults or pick the option number; the script uses UTC.
+
 ### Output
 
 The script generates two files:
