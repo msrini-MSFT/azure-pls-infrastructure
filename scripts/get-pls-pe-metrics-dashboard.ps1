@@ -31,9 +31,10 @@ function Validate-UtcDateTime {
     param([string]$input,[string]$label)
     [string[]]$formats = @('yyyy-MM-dd HH:mm:ss','yyyy-MM-ddTHH:mm:ssZ','yyyy-MM-ddTHH:mm:ss','yyyy-MM-dd HH:mm:ssZ')
     $style = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
-    $result = $null
-    if ([datetime]::TryParseExact($input, $formats, [System.Globalization.CultureInfo]::InvariantCulture, $style, [ref]$result)) {
-        return $result
+    foreach ($fmt in $formats) {
+        try {
+            return [datetime]::ParseExact($input, $fmt, [System.Globalization.CultureInfo]::InvariantCulture, $style)
+        } catch { }
     }
     Write-Host "Invalid $label format. Use 'yyyy-MM-dd HH:mm:ss' UTC (e.g., 2025-12-15 00:00:00)." -ForegroundColor Red
     return $null
