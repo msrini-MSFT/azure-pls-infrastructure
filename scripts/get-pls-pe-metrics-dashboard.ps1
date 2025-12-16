@@ -67,13 +67,17 @@ if ($timeParamsProvided) {
         '2' { $Duration = '6h' }
         '3' { $Duration = '3h' }
         '4' {
+            $parsedStart = $null
+            $parsedEnd = $null
             do {
                 $rawStart = Read-Host "Enter UTC start (yyyy-MM-dd HH:mm:ss)"
                 $rawEnd = Read-Host "Enter UTC end   (yyyy-MM-dd HH:mm:ss)"
-                $StartTime = Validate-UtcDateTime $rawStart 'start time'
-                $EndTime   = Validate-UtcDateTime $rawEnd 'end time'
-                if (-not $StartTime -or -not $EndTime) { Write-Host "Please re-enter both times in UTC format." -ForegroundColor Yellow }
-            } while (-not $StartTime -or -not $EndTime)
+                $parsedStart = Validate-UtcDateTime $rawStart 'start time'
+                $parsedEnd   = Validate-UtcDateTime $rawEnd 'end time'
+                if (-not $parsedStart -or -not $parsedEnd) { Write-Host "Please re-enter both times in UTC format." -ForegroundColor Yellow }
+            } while (-not $parsedStart -or -not $parsedEnd)
+            $StartTime = $parsedStart
+            $EndTime   = $parsedEnd
         }
         Default { $Duration = '1d' }
     }
