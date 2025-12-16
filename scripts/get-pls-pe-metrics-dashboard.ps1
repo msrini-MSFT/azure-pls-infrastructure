@@ -29,11 +29,15 @@ function Parse-DurationString {
 
 function Validate-UtcDateTime {
     param([string]$input,[string]$label)
+    if ([string]::IsNullOrWhiteSpace($input)) {
+        Write-Host "Empty $label. Please enter a value." -ForegroundColor Red
+        return $null
+    }
     try {
-        $dt = [datetime]::Parse($input)
+        $dt = [datetime]::Parse($input, [System.Globalization.CultureInfo]::InvariantCulture)
         return $dt.ToUniversalTime()
     } catch {
-        Write-Host "Invalid $label format. Use 'yyyy-MM-dd HH:mm:ss' UTC (e.g., 2025-12-15 00:00:00)." -ForegroundColor Red
+        Write-Host "Invalid $label format: '$input'. Error: $($_.Exception.Message)" -ForegroundColor Red
         return $null
     }
 }
