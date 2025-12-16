@@ -28,10 +28,19 @@ function Parse-DurationString {
 }
 
 function Validate-UtcDateTime {
-    param([string]$input,[string]$label)
-    if ([string]::IsNullOrWhiteSpace($input)) {
+    param([string]$value,[string]$label)
+    # Avoid automatic $input variable; normalize and trim the supplied value
+    $text = ($value -as [string])
+    if ($null -ne $text) { $text = $text.Trim() }
+    if ([string]::IsNullOrWhiteSpace($text)) {
         Write-Host "Empty $label. Please enter a value." -ForegroundColor Red
         return $null
+    }
+
+    # Allow date-only input by supplying a default time (start -> 00:00:00, end -> 23:59:59)
+    if ($text -match '^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$') {
+        $defaultTime = ($label -like '*end*') ? '23:59:59' : '00:00:00'
+        $text = "$text $defaultTime"
     }
     $formats = @('yyyy-MM-dd HH:mm:ss','yyyy-MM-ddTHH:mm:ssZ','yyyy-MM-ddTHH:mm:ss','yyyy-MM-dd HH:mm:ssZ','MM/dd/yyyy HH:mm:ss')
     $styles  = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
@@ -40,17 +49,47 @@ function Validate-UtcDateTime {
     foreach ($c in $cultures) {
         foreach ($f in $formats) {
             try {
-                $dt = [datetime]::ParseExact($input, $f, $c, $styles)
+                $dt = [datetime]::ParseExact($text, $f, $c, $styles)
                 return $dt.ToUniversalTime()
             } catch { }
         }
         try {
-            $dt = [datetime]::Parse($input, $c, $styles)
+            $dt = [datetime]::Parse($text, $c, $styles)
             return $dt.ToUniversalTime()
         } catch { }
     }
-    Write-Host "Invalid $label format: '$input'. Expected UTC like 2025-12-15 00:00:00." -ForegroundColor Red
+    Write-Host "Invalid $label format: '$text'. Expected UTC like 2025-12-15 00:00:00." -ForegroundColor Red
     return $null
+}
+
+function Read-UtcDateFromParts {
+    param(
+        [string]$label,
+        [string]$defaultTime = '00:00:00'
+    )
+
+    $dateFormats = @('yyyy-M-d HH:mm:ss','yyyy-MM-dd HH:mm:ss')
+    $styles = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
+    $culture = [System.Globalization.CultureInfo]::InvariantCulture
+
+    while ($true) {
+        $year  = Read-Host "$label year (e.g., 2025)"
+        $month = Read-Host "$label month (1-12)"
+        $day   = Read-Host "$label day (1-31)"
+        $time  = Read-Host "$label time HH:mm:ss (default $defaultTime)"
+        if ([string]::IsNullOrWhiteSpace($time)) { $time = $defaultTime }
+
+        $candidate = "$year-$month-$day $time"
+
+        foreach ($fmt in $dateFormats) {
+            try {
+                $dt = [datetime]::ParseExact($candidate, $fmt, $culture, $styles)
+                return $dt.ToUniversalTime()
+            } catch { }
+        }
+
+        Write-Host "Invalid $label values. Please re-enter (year/month/day and time)." -ForegroundColor Yellow
+    }
 }
 
 # Interactive time window selection (only if nothing was provided)
@@ -81,15 +120,8 @@ if ($timeParamsProvided) {
         '2' { $Duration = '6h' }
         '3' { $Duration = '3h' }
         '4' {
-            $parsedStart = $null
-            $parsedEnd = $null
-            do {
-                $rawStart = Read-Host "Enter UTC start (yyyy-MM-dd HH:mm:ss)"
-                $rawEnd = Read-Host "Enter UTC end   (yyyy-MM-dd HH:mm:ss)"
-                $parsedStart = Validate-UtcDateTime $rawStart 'start time'
-                $parsedEnd   = Validate-UtcDateTime $rawEnd 'end time'
-                if (-not $parsedStart -or -not $parsedEnd) { Write-Host "Please re-enter both times in UTC format." -ForegroundColor Yellow }
-            } while (-not $parsedStart -or -not $parsedEnd)
+            $parsedStart = Read-UtcDateFromParts 'Start'
+            $parsedEnd   = Read-UtcDateFromParts 'End'
             $StartTime = $parsedStart
             $EndTime   = $parsedEnd
         }
@@ -109,7 +141,6 @@ if ($timeParamsProvided) {
         $startTime = $endTime.AddHours(-24)
     }
 }
-
 # Interactive aggregation selection (only if not provided)
 if (-not $PSBoundParameters.ContainsKey('AggregationMethod')) {
     Write-Host "Select aggregation method:" -ForegroundColor Cyan
