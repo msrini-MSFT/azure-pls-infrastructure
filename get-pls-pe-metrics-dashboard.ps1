@@ -28,27 +28,134 @@ function Parse-DurationString {
 }
 
 function Validate-UtcDateTime {
-    param([string]$input,[string]$label)
-    try {
-        return [datetime]::Parse($input)
-    } catch {
-        Write-Host "Invalid $label format. Use 'yyyy-MM-dd HH:mm:ss' UTC." -ForegroundColor Red
+    param([string]$value,[string]$label)
+    # Avoid automatic $input variable; normalize and trim the supplied value
+    $text = ($value -as [string])
+    if ($null -ne $text) { $text = $text.Trim() }
+    if ([string]::IsNullOrWhiteSpace($text)) {
+        Write-Host "Empty $label. Please enter a value." -ForegroundColor Red
         return $null
+    }
+
+    # Allow date-only input by supplying a default time (start -> 00:00:00, end -> 23:59:59)
+    if ($text -match '^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$') {
+        $defaultTime = ($label -like '*end*') ? '23:59:59' : '00:00:00'
+        $text = "$text $defaultTime"
+    }
+    $formats = @('yyyy-MM-dd HH:mm:ss','yyyy-MM-ddTHH:mm:ssZ','yyyy-MM-ddTHH:mm:ss','yyyy-MM-dd HH:mm:ssZ','MM/dd/yyyy HH:mm:ss')
+    $styles  = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
+    $cultures = @([System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.CultureInfo]::CurrentCulture)
+
+    foreach ($c in $cultures) {
+        foreach ($f in $formats) {
+            try {
+                $dt = [datetime]::ParseExact($text, $f, $c, $styles)
+                return $dt.ToUniversalTime()
+            } catch { }
+        }
+        try {
+            $dt = [datetime]::Parse($text, $c, $styles)
+            return $dt.ToUniversalTime()
+        } catch { }
+    }
+    Write-Host "Invalid $label format: '$text'. Expected UTC like 2025-12-15 00:00:00." -ForegroundColor Red
+    return $null
+}
+
+function Read-UtcDateFromParts {
+    param(
+        [string]$label,
+        [string]$defaultTime = '00:00:00'
+    )
+
+    $dateFormats = @('yyyy-M-d HH:mm:ss','yyyy-MM-dd HH:mm:ss')
+    $styles = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
+    $culture = [System.Globalization.CultureInfo]::InvariantCulture
+
+    while ($true) {
+        $year  = Read-Host "$label year (e.g., 2025)"
+        $month = Read-Host "$label month (1-12)"
+        $day   = Read-Host "$label day (1-31)"
+        $time  = Read-Host "$label time HH:mm:ss (default $defaultTime)"
+        if ([string]::IsNullOrWhiteSpace($time)) { $time = $defaultTime }
+
+        $candidate = "$year-$month-$day $time"
+
+        foreach ($fmt in $dateFormats) {
+            try {
+                $dt = [datetime]::ParseExact($candidate, $fmt, $culture, $styles)
+                return $dt.ToUniversalTime()
+            } catch { }
+        }
+
+        Write-Host "Invalid $label values. Please re-enter (year/month/day and time)." -ForegroundColor Yellow
     }
 }
 
-# Time window selection
-if ($StartTime -and $EndTime) {
-    $startTime = $StartTime
-    $endTime = $EndTime
-} elseif ($Duration) {
-    $ts = Parse-DurationString $Duration
-    if (-not $ts) { throw "Unsupported -Duration. Try '2h', '1d', '30m', or just hours (e.g., '6')." }
-    $endTime = (Get-Date).ToUniversalTime()
-    $startTime = $endTime.Subtract($ts)
+# Interactive time window selection (only if nothing was provided)
+$timeParamsProvided = $PSBoundParameters.ContainsKey('StartTime') -or $PSBoundParameters.ContainsKey('EndTime') -or $PSBoundParameters.ContainsKey('Duration') -or $PSBoundParameters.ContainsKey('LookbackHours')
+
+if ($timeParamsProvided) {
+    if ($StartTime -and $EndTime) {
+        $startTime = $StartTime
+        $endTime = $EndTime
+    } elseif ($Duration) {
+        $ts = Parse-DurationString $Duration
+        if (-not $ts) { throw "Unsupported -Duration. Try '2h', '1d', '30m', or just hours (e.g., '6')." }
+        $endTime = (Get-Date).ToUniversalTime()
+        $startTime = $endTime.Subtract($ts)
+    } else {
+        $endTime = (Get-Date).ToUniversalTime()
+        $startTime = $endTime.AddHours(-$LookbackHours)
+    }
 } else {
-    $endTime = (Get-Date).ToUniversalTime()
-    $startTime = $endTime.AddHours(-$LookbackHours)
+    Write-Host "Select time range (UTC):" -ForegroundColor Cyan
+    Write-Host "  [1] Last 1 day (default)" -ForegroundColor Gray
+    Write-Host "  [2] Last 6 hours" -ForegroundColor Gray
+    Write-Host "  [3] Last 3 hours" -ForegroundColor Gray
+    Write-Host "  [4] Custom start/end (UTC)" -ForegroundColor Gray
+    $choice = Read-Host "Enter 1/2/3/4 or press Enter for default (1)"
+
+    switch ($choice) {
+        '2' { $Duration = '6h' }
+        '3' { $Duration = '3h' }
+        '4' {
+            $parsedStart = Read-UtcDateFromParts 'Start'
+            $parsedEnd   = Read-UtcDateFromParts 'End'
+            $StartTime = $parsedStart
+            $EndTime   = $parsedEnd
+        }
+        Default { $Duration = '1d' }
+    }
+
+    if ($StartTime -and $EndTime) {
+        $startTime = $StartTime
+        $endTime = $EndTime
+    } elseif ($Duration) {
+        $ts = Parse-DurationString $Duration
+        if (-not $ts) { throw "Unsupported -Duration. Try '2h', '1d', '30m', or just hours (e.g., '6')." }
+        $endTime = (Get-Date).ToUniversalTime()
+        $startTime = $endTime.Subtract($ts)
+    } else {
+        $endTime = (Get-Date).ToUniversalTime()
+        $startTime = $endTime.AddHours(-24)
+    }
+}
+
+# Interactive aggregation selection (only if not provided)
+if (-not $PSBoundParameters.ContainsKey('AggregationMethod')) {
+    Write-Host "Select aggregation method:" -ForegroundColor Cyan
+    Write-Host "  [1] sum (default)" -ForegroundColor Gray
+    Write-Host "  [2] avg" -ForegroundColor Gray
+    Write-Host "  [3] max" -ForegroundColor Gray
+    Write-Host "  [4] min" -ForegroundColor Gray
+    $aggChoice = Read-Host "Enter 1/2/3/4 or press Enter for default (1)"
+    switch ($aggChoice) {
+        '2' { $AggregationMethod = 'avg' }
+        '3' { $AggregationMethod = 'max' }
+        '4' { $AggregationMethod = 'min' }
+        Default { $AggregationMethod = 'sum' }
+    }
 }
 
 Write-Host "Time range (UTC): $($startTime.ToString('yyyy-MM-dd HH:mm:ss')) -> $($endTime.ToString('yyyy-MM-dd HH:mm:ss'))" -ForegroundColor Cyan
