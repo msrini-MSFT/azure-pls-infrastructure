@@ -29,12 +29,14 @@ function Parse-DurationString {
 
 function Validate-UtcDateTime {
     param([string]$input,[string]$label)
-    try {
-        return [datetime]::Parse($input)
-    } catch {
-        Write-Host "Invalid $label format. Use 'yyyy-MM-dd HH:mm:ss' UTC." -ForegroundColor Red
-        return $null
+    $formats = @('yyyy-MM-dd HH:mm:ss','yyyy-MM-ddTHH:mm:ssZ','yyyy-MM-ddTHH:mm:ss','yyyy-MM-dd HH:mm:ssZ')
+    $style = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
+    $result = $null
+    if ([datetime]::TryParseExact($input, $formats, [System.Globalization.CultureInfo]::InvariantCulture, $style, [ref]$result)) {
+        return $result
     }
+    Write-Host "Invalid $label format. Use 'yyyy-MM-dd HH:mm:ss' UTC (e.g., 2025-12-15 00:00:00)." -ForegroundColor Red
+    return $null
 }
 
 # Interactive time window selection (only if nothing was provided)
