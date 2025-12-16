@@ -33,13 +33,24 @@ function Validate-UtcDateTime {
         Write-Host "Empty $label. Please enter a value." -ForegroundColor Red
         return $null
     }
-    try {
-        $dt = [datetime]::Parse($input, [System.Globalization.CultureInfo]::InvariantCulture)
-        return $dt.ToUniversalTime()
-    } catch {
-        Write-Host "Invalid $label format: '$input'. Error: $($_.Exception.Message)" -ForegroundColor Red
-        return $null
+    $formats = @('yyyy-MM-dd HH:mm:ss','yyyy-MM-ddTHH:mm:ssZ','yyyy-MM-ddTHH:mm:ss','yyyy-MM-dd HH:mm:ssZ','MM/dd/yyyy HH:mm:ss')
+    $styles  = [System.Globalization.DateTimeStyles]::AssumeUniversal -bor [System.Globalization.DateTimeStyles]::AdjustToUniversal
+    $cultures = @([System.Globalization.CultureInfo]::InvariantCulture, [System.Globalization.CultureInfo]::CurrentCulture)
+
+    foreach ($c in $cultures) {
+        foreach ($f in $formats) {
+            try {
+                $dt = [datetime]::ParseExact($input, $f, $c, $styles)
+                return $dt.ToUniversalTime()
+            } catch { }
+        }
+        try {
+            $dt = [datetime]::Parse($input, $c, $styles)
+            return $dt.ToUniversalTime()
+        } catch { }
     }
+    Write-Host "Invalid $label format: '$input'. Expected UTC like 2025-12-15 00:00:00." -ForegroundColor Red
+    return $null
 }
 
 # Interactive time window selection (only if nothing was provided)
